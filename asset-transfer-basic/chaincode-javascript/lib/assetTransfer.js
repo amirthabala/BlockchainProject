@@ -13,46 +13,18 @@ class AssetTransfer extends Contract {
     async InitLedger(ctx) {
         const assets = [
             {
-                ID: 'asset1',
-                Color: 'blue',
-                Size: 5,
-                Owner: 'Tomoko',
-                AppraisedValue: 300,
+                ID: '1801050',
+                Name: 'James',
+                Branch: 'CSE',
+                Batch: 2018,
+                Certificate: 'QmbodDAMT3FxwCHQqrmcYQcri2NA6kYmanbURUp9pjqiDC',
             },
             {
-                ID: 'asset2',
-                Color: 'red',
-                Size: 5,
-                Owner: 'Brad',
-                AppraisedValue: 400,
-            },
-            {
-                ID: 'asset3',
-                Color: 'green',
-                Size: 10,
-                Owner: 'Jin Soo',
-                AppraisedValue: 500,
-            },
-            {
-                ID: 'asset4',
-                Color: 'yellow',
-                Size: 10,
-                Owner: 'Max',
-                AppraisedValue: 600,
-            },
-            {
-                ID: 'asset5',
-                Color: 'black',
-                Size: 15,
-                Owner: 'Adriana',
-                AppraisedValue: 700,
-            },
-            {
-                ID: 'asset6',
-                Color: 'white',
-                Size: 15,
-                Owner: 'Michel',
-                AppraisedValue: 800,
+                ID: '1801065',
+                Name: 'Kavi',
+                Branch: 'CSE',
+                Batch: 2018,
+                Certificate: 'QmZBwuDJBN2wevZWFMbZqAxmNJwfi5rop71Vb6GxHh9zNM',
             },
         ];
 
@@ -64,13 +36,13 @@ class AssetTransfer extends Contract {
     }
 
     // CreateAsset issues a new asset to the world state with given details.
-    async CreateAsset(ctx, id, color, size, owner, appraisedValue) {
+    async CreateAsset(ctx, id, name, branch, batch, certfile) {
         const asset = {
             ID: id,
-            Color: color,
-            Size: size,
-            Owner: owner,
-            AppraisedValue: appraisedValue,
+            Name: name,
+            Branch: branch,
+            Batch: parseInt(batch),
+            Certificate: certfile,
         };
         ctx.stub.putState(id, Buffer.from(JSON.stringify(asset)));
         return JSON.stringify(asset);
@@ -85,8 +57,17 @@ class AssetTransfer extends Contract {
         return assetJSON.toString();
     }
 
+    async ReadCertificate(ctx, id) {
+        const assetJSON = await ctx.stub.getState(id); // get the asset from chaincode state
+        if (!assetJSON || assetJSON.length === 0) {
+            throw new Error(`The asset ${id} does not exist`);
+        }
+        const asset = JSON.parse(assetJSON);
+        return asset.Certificate;
+    }
+
     // UpdateAsset updates an existing asset in the world state with provided parameters.
-    async UpdateAsset(ctx, id, color, size, owner, appraisedValue) {
+    async UpdateAsset(ctx, id, name, branch, batch, certfile) {
         const exists = await this.AssetExists(ctx, id);
         if (!exists) {
             throw new Error(`The asset ${id} does not exist`);
@@ -95,10 +76,10 @@ class AssetTransfer extends Contract {
         // overwriting original asset with new asset
         const updatedAsset = {
             ID: id,
-            Color: color,
-            Size: size,
-            Owner: owner,
-            AppraisedValue: appraisedValue,
+            Name: name,
+            Branch: branch,
+            Batch: batch,
+            Certificate: certfile,
         };
         return ctx.stub.putState(id, Buffer.from(JSON.stringify(updatedAsset)));
     }
@@ -122,7 +103,7 @@ class AssetTransfer extends Contract {
     async TransferAsset(ctx, id, newOwner) {
         const assetString = await this.ReadAsset(ctx, id);
         const asset = JSON.parse(assetString);
-        asset.Owner = newOwner;
+        asset.Name = newOwner;
         return ctx.stub.putState(id, Buffer.from(JSON.stringify(asset)));
     }
 
